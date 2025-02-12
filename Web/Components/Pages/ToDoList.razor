@@ -1,0 +1,142 @@
+@page "/ToDoList"
+@rendermode InteractiveServer
+@using Application.Services
+@using Domain.Entities
+@using Infra
+<div class="container">
+    <h3>Lista de Tarefas</h3>
+
+    <div class="add-todo">
+        <input type="text" @bind="_newTodoText" placeholder="Nova tarefa..." class="todo-input" @onkeyup="@HandleKeyPress" />
+        <input type="text" @bind="_newTodoDesc" placeholder="Adicione uma descrição..." class="todo-input" @onkeyup="@HandleKeyPress" />
+        
+        <button class="add-button" @onclick="@AddTodo">Adicionar</button>
+    </div>
+
+    <ul class="todo-list">
+        @foreach (var todo in _toDoList)
+        {
+            <li class="todo-item @(todo.Done ? "completed" : "")">
+                <input type="checkbox" @bind="todo.Done"/>
+                <div>
+                    <span class="name">@todo.Name</span><br>
+                    <span class="description">@todo.Description</span>
+                </div>
+                <button class="delete-button" @onclick="() => DeleteTodo(todo)">X</button>
+            </li>
+        }
+    </ul>
+</div>
+
+<style>
+    .name {
+        text-decoration-thickness: 15px;
+        font-size: 20px;
+    }
+    .description{
+        color: #90959d;
+    }
+    .container {
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        border-radius: 8px;
+    }
+
+    .add-todo {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .todo-input {
+        flex: 1;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .add-button {
+        padding: 8px 16px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .todo-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .todo-item {
+        display: flex;
+        gap: 10px;
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        align-items: baseline;
+    }
+
+    .completed span {
+        text-decoration: line-through;
+        color: #888;
+    }
+
+    .delete-button {
+        margin-left: auto;
+        padding: 4px 8px;
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+</style>
+
+@inject IToDoServices ToDoService 
+
+@code {
+    private string _newTodoText = "";
+    private string _newTodoDesc = "";
+    private List<ToDoItem>? _toDoList;
+
+    protected override void OnInitialized()
+    {
+        _toDoList = ToDoService.GetToDos();
+    }
+    
+    private void HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            AddTodo();
+        }
+    }
+
+    private void AddTodo()
+    {
+        if (!string.IsNullOrWhiteSpace(_newTodoText))
+        {
+            var item = new ToDoItem()
+            {
+                Name = _newTodoText,
+                Description = _newTodoDesc,
+                Date = new DateTime(),
+                Done = false
+            };
+            ToDoService.CreateToDo(item);
+            _newTodoText = "";
+            _newTodoDesc = "";
+        }
+    }
+
+    private void DeleteTodo(ToDoItem todo)
+    {
+        ToDoService.DeleteToDo(todo);
+    }
+
+    
+
+}
