@@ -21,6 +21,7 @@
                 <div>
                     <span class="name">@todo.Name</span><br>
                     <span class="description">@todo.Description</span>
+                    <span class="date">@todo.Date.ToShortDateString()</span>
                 </div>
                 <button class="delete-button" @onclick="() => DeleteTodo(todo)">X</button>
             </li>
@@ -35,6 +36,10 @@
     }
     .description{
         color: #90959d;
+    }
+    .date{
+        font-size: 16px;
+        color: #2b3035;
     }
     .container {
         max-width: 600px;
@@ -112,6 +117,7 @@
         if (e.Key == "Enter")
         {
             AddTodo();
+            _toDoList = ToDoService.GetToDos();
         }
     }
 
@@ -123,20 +129,25 @@
             {
                 Name = _newTodoText,
                 Description = _newTodoDesc,
-                Date = new DateTime(),
+                Date = DateTime.UtcNow,
                 Done = false
             };
             ToDoService.CreateToDo(item);
             _newTodoText = "";
             _newTodoDesc = "";
         }
+        _toDoList = ToDoService.GetToDos();
+
     }
 
     private void DeleteTodo(ToDoItem todo)
     {
         ToDoService.DeleteToDo(todo);
+        _toDoList = ToDoService.GetToDos();
     }
 
     
 
 }
+
+
